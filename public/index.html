@@ -34,7 +34,7 @@
 
         const body = { id_token: response.credential };
 
-        fetch("http://localhost:8082/api/auth/google", {
+        fetch("https://google-auth123.herokuapp.com/api/auth/google", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
