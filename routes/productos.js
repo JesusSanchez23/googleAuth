@@ -1,13 +1,16 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 const {
-  crearCategoria,
-  obtenerCategorias,
-  obtenerCategoria,
-  actualizarCategoria,
-  borrarCategoria,
-} = require("../controllers/categorias");
-const { existeCategoriaPorId } = require("../helpers/db-validators");
+  crearProducto,
+  obtenerProductos,
+  obtenerProducto,
+  actualizarProducto,
+  borrarProducto,
+} = require("../controllers/productos");
+const {
+  existeCategoriaPorId,
+  existeProductoPorId,
+} = require("../helpers/db-validators");
 const { validarJWT } = require("../middlewares/validar-jwt");
 const { esAdminRole } = require("../middlewares/validar-roles");
 
@@ -17,41 +20,38 @@ const router = Router();
 
 // url/api/categorias
 
-// obtener todas las categorias
-router.get("/", obtenerCategorias);
+// obtener todos los productos
+router.get("/", obtenerProductos);
 
-// obtener una categoria por id
+// obtener un producto por id
 router.get(
   "/:id",
   [
     check("id", "No es un Id valido").isMongoId(),
-    check("id").custom(existeCategoriaPorId),
+    check("id").custom(existeProductoPorId),
     validarCampos,
   ],
-  obtenerCategoria
+  obtenerProducto
 );
 
-// crear categoria - cualquiera con un token valido
+// crear producto - cualquiera con un token valido
 router.post(
   "/",
   [
     validarJWT,
     check("nombre", "el nombre es obligatorio").not().isEmpty(),
+    check("categoria", "No es un ID de Mongo Válido").isMongoId(),
+    check("categoria").custom(existeCategoriaPorId),
     validarCampos,
   ],
-  crearCategoria
+  crearProducto
 );
 
 // Actualizar - privado - cuqluiera con token valido
 router.put(
   "/:id",
-  [
-    validarJWT,
-    check("nombre", "el nombre es obligatorio").not().isEmpty(),
-    check("id").custom(existeCategoriaPorId),
-    validarCampos,
-  ],
-  actualizarCategoria
+  [validarJWT, check("id").custom(existeProductoPorId), validarCampos],
+  actualizarProducto
 );
 
 // Borrar categoria- admin
@@ -61,10 +61,10 @@ router.delete(
     validarJWT,
     esAdminRole,
     check("id", "No es un Id valido").isMongoId(),
-    check("id").custom(existeCategoriaPorId),
+    check("id").custom(existeProductoPorId),
     validarCampos,
   ],
-  borrarCategoria
+  borrarProducto
 );
 
 module.exports = router;

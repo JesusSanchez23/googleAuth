@@ -1,34 +1,35 @@
 const { response } = require("express");
 const res = require("express/lib/response");
-const { Categoria } = require("../models");
-const categoria = require("../models/categoria");
-const crearCategoria = async (req, res = response) => {
-  const nombre = req.body.nombre.toUpperCase();
+const { Producto } = require("../models");
 
-  const categoriaDB = await Categoria.findOne({ nombre });
+const crearProducto = async (req, res = response) => {
+  const { estado, usuario, ...body } = req.body;
 
-  if (categoriaDB) {
+  const productoDB = await Producto.findOne({ nombre: body.nombre });
+
+  if (productoDB) {
     return res.status(400).json({
-      msg: `La categoria ${categoriaDB.nombre} ya existe`,
+      msg: `El producto ${productoDB.nombre} ya existe`,
     });
   }
   // generar la data a guardar
 
   const data = {
-    nombre,
+    ...body,
+    nombre: body.nombre.toUpperCase(),
     usuario: req.usuario._id,
   };
 
-  const categoria = new Categoria(data);
+  const producto = new Producto(data);
 
   // guardarDB
 
-  await categoria.save();
+  await producto.save();
 
-  res.status(201).json(categoria);
+  res.status(201).json(producto);
 };
 
-const obtenerCategorias = async (req, res = response) => {
+const obtenerProductos = async (req, res = response) => {
   // const params = req.query;
 
   // const { q, nombre = "No name", apikey, page = 1, limit } = req.query;
@@ -42,9 +43,9 @@ const obtenerCategorias = async (req, res = response) => {
 
   //Te permite saber el numero de registris en una base de datos mongoDB
   // const total = await Usuario.countDocuments(query);
-  const [total, categorias] = await Promise.all([
-    Categoria.countDocuments(query),
-    Categoria.find(query)
+  const [total, productos] = await Promise.all([
+    Producto.countDocuments(query),
+    Producto.find(query)
       .populate("usuario", "nombre")
       .skip(Number(desde))
       .limit(Number(limite)),
@@ -52,53 +53,57 @@ const obtenerCategorias = async (req, res = response) => {
 
   res.json({
     total,
-    categorias,
+    productos,
     // total,
     // usuarios,
   });
 };
 
-const obtenerCategoria = async (req, res = response) => {
+const obtenerProducto = async (req, res = response) => {
   const { id } = req.params;
 
-  const categoria = await Categoria.findById(id).populate("usuario", "nombre");
+  const producto = await Producto.findById(id)
+    .populate("usuario", "nombre")
+    .populate("categoria", "nombre");
 
   res.status(201).json({
-    categoria,
+    producto,
   });
 };
 
-const actualizarCategoria = async (req, res = response) => {
+const actualizarProducto = async (req, res = response) => {
   const { id } = req.params;
   const { estado, usuario, ...data } = req.body;
 
-  data.nombre = data.nombre.toUpperCase();
+  if (data.nombre) {
+    data.nombre = data.nombre.toUpperCase();
+  }
 
   data.usuario = req.usuario._id;
 
-  const categoria = await Categoria.findByIdAndUpdate(id, data, { new: true });
+  const producto = await Producto.findByIdAndUpdate(id, data, { new: true });
 
   res.json({
-    categoria,
+    producto,
   });
 };
 
-const borrarCategoria = async (req, res = response) => {
+const borrarProducto = async (req, res = response) => {
   const { id } = req.params;
 
-  const categoriaBorrada = await Categoria.findByIdAndUpdate(
+  const productoBorrado = await Producto.findByIdAndUpdate(
     id,
     { estado: false },
     { new: true }
   );
 
-  res.status(200).json(categoriaBorrada);
+  res.status(200).json(productoBorrado);
 };
 
 module.exports = {
-  crearCategoria,
-  obtenerCategorias,
-  obtenerCategoria,
-  actualizarCategoria,
-  borrarCategoria,
+  crearProducto,
+  obtenerProductos,
+  obtenerProducto,
+  actualizarProducto,
+  borrarProducto,
 };
