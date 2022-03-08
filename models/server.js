@@ -4,47 +4,52 @@ const { dbConnection } = require("../db/config");
 require("dotenv").config();
 
 class Server {
-    constructor() {
-        this.app = express();
-        this.port = process.env.PORT;
-        this.usuariosPath = "/api/usuarios";
-        this.authPath = "/api/auth";
+  constructor() {
+    this.app = express();
+    this.port = process.env.PORT;
 
-        // conectar a base de datos
-        this.conectarDB();
-        // middlewares
-        this.middlewares();
+    this.paths = {
+      auth: "/api/auth",
+      usuariosPath: "/api/usuarios",
+      categorias: "/api/categorias",
+    };
 
-        // Rutas de mi aplicacion
-        this.router();
-    }
+    // conectar a base de datos
+    this.conectarDB();
+    // middlewares
+    this.middlewares();
 
-    async conectarDB() {
-        await dbConnection();
-    }
+    // Rutas de mi aplicacion
+    this.router();
+  }
 
-    middlewares() {
-        // cors
+  async conectarDB() {
+    await dbConnection();
+  }
 
-        this.app.use(cors());
+  middlewares() {
+    // cors
 
-        // Parseo y lectura del body
-        this.app.use(express.json());
+    this.app.use(cors());
 
-        // directorio publico
-        this.app.use(express.static("public"));
-    }
+    // Parseo y lectura del body
+    this.app.use(express.json());
 
-    router() {
-        this.app.use(this.authPath, require("../routes/auth"));
-        this.app.use(this.usuariosPath, require("../routes/user"));
-    }
+    // directorio publico
+    this.app.use(express.static("public"));
+  }
 
-    listen() {
-        this.app.listen(this.port, () => {
-            console.log("Running", process.env.PORT);
-        });
-    }
+  router() {
+    this.app.use(this.paths.auth, require("../routes/auth"));
+    this.app.use(this.paths.usuariosPath, require("../routes/user"));
+    this.app.use(this.paths.categorias, require("../routes/categorias"));
+  }
+
+  listen() {
+    this.app.listen(this.port, () => {
+      console.log("Running", process.env.PORT);
+    });
+  }
 }
 
 module.exports = Server;
