@@ -13,6 +13,7 @@ class Server {
       usuariosPath: "/api/usuarios",
       categorias: "/api/categorias",
       productos: "/api/productos",
+      buscar: "/api/buscar",
     };
 
     // conectar a base de datos
@@ -21,7 +22,7 @@ class Server {
     this.middlewares();
 
     // Rutas de mi aplicacion
-    this.router();
+    this.routes();
   }
 
   async conectarDB() {
@@ -40,11 +41,12 @@ class Server {
     this.app.use(express.static("public"));
   }
 
-  router() {
+  routes() {
     this.app.use(this.paths.auth, require("../routes/auth"));
     this.app.use(this.paths.usuariosPath, require("../routes/user"));
     this.app.use(this.paths.categorias, require("../routes/categorias"));
     this.app.use(this.paths.productos, require("../routes/productos"));
+    this.app.use(this.paths.buscar, require("../routes/buscar"));
   }
 
   listen() {
