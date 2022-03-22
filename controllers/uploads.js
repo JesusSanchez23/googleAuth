@@ -1,8 +1,7 @@
 const { response } = require("express");
+const { subirArchivo } = require("../helpers");
 
-const path = require("path");
-
-const cargarArchivos = (req, res = response) => {
+const cargarArchivos = async (req, res = response) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     res.status(400).json({ msg: "No files were uploaded." });
     return;
@@ -13,17 +12,21 @@ const cargarArchivos = (req, res = response) => {
     return;
   }
 
-  const { archivo } = req.files;
+  try {
+    const nombre = await subirArchivo(
+      req.files,
+      ["txt", "docx"],
+      "documentos/parte1"
+    );
 
-  const uploadPath = path.join(__dirname, "../uploads/", archivo.name);
-
-  archivo.mv(uploadPath, (err) => {
-    if (err) {
-      return res.status(500).json({ err });
-    }
-
-    res.json({ msg: "File uploaded to " + uploadPath });
-  });
+    res.json({
+      nombre,
+    });
+  } catch (error) {
+    res.status(404).json({
+      msg: error,
+    });
+  }
 };
 
 module.exports = {
